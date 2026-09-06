@@ -3,12 +3,12 @@
   "short_name": "8/8/8 Tracker",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f5f0e6",
-  "theme_color": "#f5f0e6",
+  "background_color": "#22331d",
+  "theme_color": "#22331d",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⏳</text></svg>",
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%2322331d'/><text x='256' y='230' font-family='Georgia, serif' font-size='56' fill='%23eae3d2' text-anchor='middle' letter-spacing='6'>888</text><text x='256' y='300' font-family='Georgia, serif' font-size='22' fill='%23eae3d2' text-anchor='middle' letter-spacing='1'>success, wealth, prosperity</text></svg>",
       "sizes": "192x192 512x512",
       "type": "image/svg+xml"
     }
