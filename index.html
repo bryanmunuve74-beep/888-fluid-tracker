@@ -1,537 +1,400 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>8/8/8 Fluid Time Tracker - RPG Edition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>8/8/8 Fluid RPG Tracker</title>
+
+  <!-- PWA & MOBILE METADATA -->
+  <meta name="theme-color" id="theme-color-meta" content="#f5f0e6">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="8/8/8 Tracker">
+  <meta name="application-name" content="8/8/8 Tracker">
+
+  <!-- EXTERNAL PWA MANIFEST -->
+  <link rel="manifest" href="./manifest.json">
+
+  <!-- EXTERNAL FONTS WITH SYSTEM OFFLINE FALLBACKS -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
   
   <style>
     :root {
+      /* LIGHT MODE (Cream Palette: #F5F0E6) */
+      --bg: #f5f0e6;
+      --card-bg: #ffffff;
+      --border-pixel: #dcd2c0;
+      --text-main: #2d2820;
+      --text-muted: #786e5e;
+      --work: #2563eb;
+      --personal: #db2777;
+      --sleep: #7c3aed;
+      --hp-color: #dc2626;
+      --xp-color: #d97706;
+      --rival-color: #9333ea;
+      --shadow: #c8bead;
+    }
+
+    [data-theme="dark"] {
       --bg: #0d0f18;
       --card-bg: #161a29;
       --border-pixel: #2a3148;
-      --accent-work: #3b82f6;
-      --accent-personal: #ec4899;
-      --accent-sleep: #8b5cf6;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --work: #3b82f6;
+      --personal: #ec4899;
+      --sleep: #8b5cf6;
       --hp-color: #ef4444;
       --xp-color: #eab308;
       --rival-color: #a855f7;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
+      --shadow: #000000;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
     body {
       background-color: var(--bg);
       color: var(--text-main);
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      padding: 24px 16px;
-    }
-
-    .retro-font {
-      font-family: 'Press Start 2P', monospace;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 800px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    /* HEADER / BATTLE STATS */
-    .rpg-dashboard {
-      background: var(--card-bg);
-      border: 4px solid var(--border-pixel);
-      box-shadow: 0 8px 0 #000;
-      padding: 20px;
-      border-radius: 4px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    @media (max-width: 600px) {
-      .rpg-dashboard { grid-template-columns: 1fr; }
-    }
-
-    .character-card {
-      background: rgba(0,0,0,0.3);
-      padding: 12px;
-      border: 2px solid var(--border-pixel);
-      border-radius: 4px;
-      position: relative;
-    }
-
-    .avatar-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .avatar-icon {
-      width: 48px;
-      height: 48px;
-      background: #222;
-      border: 2px solid #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-    }
-
-    .bar-container {
-      margin-top: 8px;
-    }
-
-    .bar-label {
-      font-size: 9px;
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 4px;
-    }
-
-    .bar-bg {
-      height: 14px;
-      background: #111;
-      border: 2px solid #333;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .bar-fill {
-      height: 100%;
-      width: 0%;
-      transition: width 0.3s ease;
-    }
-
-    .hp-fill { background: var(--hp-color); }
-    .xp-fill { background: var(--xp-color); }
-    .rival-fill { background: var(--rival-color); }
-
-    /* 24-HR FLUID BALANCE BAR */
-    .balance-section {
-      background: var(--card-bg);
-      border: 4px solid var(--border-pixel);
-      box-shadow: 0 8px 0 #000;
-      padding: 20px;
-      border-radius: 4px;
-    }
-
-    .balance-title {
-      font-size: 11px;
-      margin-bottom: 12px;
-      color: var(--text-muted);
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .stacked-bar {
-      height: 28px;
-      background: #111;
-      border: 3px solid #000;
-      display: flex;
-      overflow: hidden;
-      border-radius: 2px;
-    }
-
-    .segment {
-      height: 100%;
-      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .segment-work { background-color: var(--accent-work); }
-    .segment-personal { background-color: var(--accent-personal); }
-    .segment-sleep { background-color: var(--accent-sleep); }
-    .segment-unallocated { background-color: #262c40; }
-
-    /* BUCKETS GRID */
-    .buckets-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-
-    @media (max-width: 680px) {
-      .buckets-grid { grid-template-columns: 1fr; }
-    }
-
-    .bucket-card {
-      background: var(--card-bg);
-      border: 4px solid var(--border-pixel);
-      box-shadow: 0 6px 0 #000;
       padding: 16px;
-      border-radius: 4px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      position: relative;
+      transition: background-color 0.3s ease;
     }
 
-    .bucket-card.work { border-top: 6px solid var(--accent-work); }
-    .bucket-card.personal { border-top: 6px solid var(--accent-personal); }
-    .bucket-card.sleep { border-top: 6px solid var(--accent-sleep); }
-
-    .bucket-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .bucket-title { font-size: 12px; font-weight: bold; }
-
-    .time-display {
-      font-size: 20px;
-      font-weight: 800;
+    .retro-font { 
+      font-family: 'Press Start 2P', "Courier New", Courier, monospace; 
       letter-spacing: -0.5px;
     }
+    
+    .container { width: 100%; max-width: 720px; display: flex; flex-direction: column; gap: 16px; }
 
-    .action-btn {
-      background: #262c40;
-      color: #fff;
-      border: 2px solid #333;
-      padding: 10px;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 9px;
-      cursor: pointer;
-      text-transform: uppercase;
-      box-shadow: 0 4px 0 #000;
-      transition: all 0.1s ease;
-    }
-
-    .action-btn:active {
-      transform: translateY(2px);
-      box-shadow: 0 2px 0 #000;
-    }
-
-    .action-btn.active {
-      background: #22c55e;
-      color: #000;
-      border-color: #16a34a;
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.8; }
-      100% { opacity: 1; }
-    }
-
-    /* FLOATING XP TEXT */
-    .floating-text {
-      position: absolute;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 12px;
-      color: #facc15;
-      text-shadow: 2px 2px #000;
-      pointer-events: none;
-      animation: floatUp 1s forwards ease-out;
-      z-index: 99;
-    }
-
-    @keyframes floatUp {
-      0% { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(-30px); }
-    }
-
-    /* LOGS / QUEST FEED */
-    .quest-log {
+    /* TOP BAR & THEME TOGGLE */
+    .top-bar { display: flex; justify-content: space-between; align-items: center; }
+    .theme-btn {
       background: var(--card-bg);
-      border: 4px solid var(--border-pixel);
-      box-shadow: 0 8px 0 #000;
-      padding: 16px;
-      font-size: 11px;
-    }
-
-    .quest-log-title {
+      border: 2px solid var(--border-pixel);
+      color: var(--text-main);
+      padding: 8px 12px;
       font-size: 10px;
-      margin-bottom: 8px;
-      color: var(--text-muted);
+      cursor: pointer;
+      box-shadow: 0 4px 0 var(--shadow);
     }
+    .theme-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--shadow); }
 
-    .log-entries {
+    /* RPG HUD */
+    .rpg-dashboard {
+      background: var(--card-bg);
+      border: 3px solid var(--border-pixel);
+      box-shadow: 0 6px 0 var(--shadow);
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 550px) { .rpg-dashboard { grid-template-columns: 1fr; } }
+
+    .hud-box { background: rgba(0,0,0,0.04); padding: 10px; border: 2px solid var(--border-pixel); }
+    .bar-bg { height: 12px; background: rgba(0,0,0,0.15); border: 1px solid var(--border-pixel); margin-top: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; transition: width 0.3s ease; }
+
+    /* 24-HOUR BALANCE BAR */
+    .balance-card {
+      background: var(--card-bg);
+      border: 3px solid var(--border-pixel);
+      box-shadow: 0 6px 0 var(--shadow);
+      padding: 14px;
+    }
+    .multi-bar { height: 20px; background: rgba(0,0,0,0.1); display: flex; overflow: hidden; border: 2px solid var(--border-pixel); margin-top: 8px; }
+    .seg-work { background: var(--work); transition: width 0.3s ease; }
+    .seg-personal { background: var(--personal); transition: width 0.3s ease; }
+    .seg-sleep { background: var(--sleep); transition: width 0.3s ease; }
+
+    /* BUCKET CARDS */
+    .bucket-card {
+      background: var(--card-bg);
+      border: 3px solid var(--border-pixel);
+      box-shadow: 0 6px 0 var(--shadow);
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      max-height: 100px;
-      overflow-y: auto;
+      gap: 10px;
     }
+    .bucket-card.active { border-color: var(--text-main); }
+    .time-val { font-size: 22px; font-weight: 800; font-family: monospace; }
+    .target-val { font-size: 11px; color: var(--text-muted); font-weight: 700; text-align: right; }
+    
+    .btn-group { display: flex; gap: 6px; }
+    button { cursor: pointer; border: 2px solid var(--border-pixel); font-family: inherit; font-weight: 700; }
+    .btn-toggle { flex: 2; padding: 12px; color: white; background: var(--text-main); }
+    .btn-adjust { flex: 1; padding: 12px; background: rgba(0,0,0,0.05); color: var(--text-main); font-size: 11px; }
 
-    .log-item {
-      color: #cbd5e1;
-      border-bottom: 1px dashed #2a3148;
-      padding-bottom: 4px;
-    }
+    .history-card { background: var(--card-bg); border: 2px solid var(--border-pixel); padding: 10px; font-size: 11px; color: var(--text-muted); }
   </style>
 </head>
 <body>
 
   <div class="container">
-    
-    <!-- RPG DASHBOARD (PLAYER VS RIVAL) -->
+    <div class="top-bar">
+      <span class="retro-font" style="font-size: 10px;" id="date-display">DATE: ----/--/--</span>
+      <button class="theme-btn retro-font" onclick="toggleTheme()">TOGGLE THEME</button>
+    </div>
+
+    <!-- RPG HUD -->
     <div class="rpg-dashboard">
-      <!-- PLAYER CARD -->
-      <div class="character-card">
-        <div class="avatar-header">
-          <div class="avatar-icon">🧙‍♂️</div>
-          <div>
-            <div id="player-name" class="retro-font" style="font-size: 10px; color: #facc15;">HERO</div>
-            <div id="player-level" class="retro-font" style="font-size: 8px; margin-top: 4px; color: #94a3b8;">LVL 1 TIME MAGE</div>
-          </div>
-        </div>
-
-        <div class="bar-container">
-          <div class="bar-label retro-font"><span>HP</span><span id="hp-text">100/100</span></div>
-          <div class="bar-bg"><div id="hp-bar" class="bar-fill hp-fill" style="width: 100%;"></div></div>
-        </div>
-
-        <div class="bar-container">
-          <div class="bar-label retro-font"><span>XP</span><span id="xp-text">0/100</span></div>
-          <div class="bar-bg"><div id="xp-bar" class="bar-fill xp-fill" style="width: 0%;"></div></div>
-        </div>
+      <div class="hud-box">
+        <div class="retro-font" style="font-size: 9px; color: var(--xp-color);">HERO (LVL <span id="lvl-val">1</span>)</div>
+        <div class="bar-bg"><div id="xp-bar" class="bar-fill" style="width: 0%; background: var(--xp-color);"></div></div>
       </div>
-
-      <!-- RIVAL CARD -->
-      <div class="character-card">
-        <div class="avatar-header">
-          <div class="avatar-icon">👾</div>
-          <div>
-            <div class="retro-font" style="font-size: 10px; color: var(--rival-color);">SLOTH RIVAL</div>
-            <div id="rival-status" class="retro-font" style="font-size: 8px; margin-top: 4px; color: #94a3b8;">GAINS POWER FROM UNALLOCATED TIME</div>
-          </div>
-        </div>
-
-        <div class="bar-container" style="margin-top: 22px;">
-          <div class="bar-label retro-font"><span>RIVAL POWER</span><span id="rival-xp-text">0 XP</span></div>
-          <div class="bar-bg"><div id="rival-bar" class="bar-fill rival-fill" style="width: 0%;"></div></div>
-        </div>
+      <div class="hud-box">
+        <div class="retro-font" style="font-size: 9px; color: var(--rival-color);">SLOTH RIVAL</div>
+        <div class="bar-bg"><div id="rival-bar" class="bar-fill" style="width: 0%; background: var(--rival-color);"></div></div>
       </div>
     </div>
 
-    <!-- 24-HR FLUID BALANCE BAR -->
-    <div class="balance-section">
-      <div class="balance-title retro-font">
-        <span>24-HOUR TIME SPECTRUM</span>
-        <span id="unallocated-text">UNALLOCATED: 24.0h</span>
+    <!-- 24-HOUR TIME SPECTRUM -->
+    <div class="balance-card">
+      <div class="retro-font" style="font-size: 9px; display: flex; justify-content: space-between;">
+        <span>24H SPECTRUM</span>
+        <span id="unallocated-val">UNALLOCATED: 24.0h</span>
       </div>
-      <div class="stacked-bar">
-        <div id="seg-work" class="segment segment-work" style="width: 0%;"></div>
-        <div id="seg-personal" class="segment segment-personal" style="width: 0%;"></div>
-        <div id="seg-sleep" class="segment segment-sleep" style="width: 0%;"></div>
-        <div id="seg-unallocated" class="segment segment-unallocated" style="width: 100%;"></div>
-      </div>
-    </div>
-
-    <!-- 8/8/8 BUCKETS -->
-    <div class="buckets-grid">
-      <!-- WORK BUCKET -->
-      <div class="bucket-card work" id="card-work">
-        <div class="bucket-header">
-          <span class="bucket-title retro-font" style="color: var(--accent-work);">WORK / STUDY</span>
-          <span class="retro-font" style="font-size: 8px; color: #64748b;">GOAL: 8h</span>
-        </div>
-        <div id="display-work" class="time-display">00h 00m 00s</div>
-        <button class="action-btn" id="btn-work" onclick="toggleTimer('work', event)">START QUEST</button>
-      </div>
-
-      <!-- PERSONAL BUCKET -->
-      <div class="bucket-card personal" id="card-personal">
-        <div class="bucket-header">
-          <span class="bucket-title retro-font" style="color: var(--accent-personal);">PERSONAL / RECHARGE</span>
-          <span class="retro-font" style="font-size: 8px; color: #64748b;">GOAL: 8h</span>
-        </div>
-        <div id="display-personal" class="time-display">00h 00m 00s</div>
-        <button class="action-btn" id="btn-personal" onclick="toggleTimer('personal', event)">START QUEST</button>
-      </div>
-
-      <!-- SLEEP BUCKET -->
-      <div class="bucket-card sleep" id="card-sleep">
-        <div class="bucket-header">
-          <span class="bucket-title retro-font" style="color: var(--accent-sleep);">SLEEP / REST</span>
-          <span class="retro-font" style="font-size: 8px; color: #64748b;">GOAL: 8h</span>
-        </div>
-        <div id="display-sleep" class="time-display">00h 00m 00s</div>
-        <button class="action-btn" id="btn-sleep" onclick="toggleTimer('sleep', event)">START QUEST</button>
+      <div class="multi-bar">
+        <div id="bar-work" class="seg-work" style="width: 0%;"></div>
+        <div id="bar-personal" class="seg-personal" style="width: 0%;"></div>
+        <div id="bar-sleep" class="seg-sleep" style="width: 0%;"></div>
       </div>
     </div>
 
-    <!-- QUEST LOG -->
-    <div class="quest-log">
-      <div class="quest-log-title retro-font">QUEST CHRONICLES</div>
-      <div id="log-entries" class="log-entries">
-        <div class="log-item">> System initialized. Ready to balance time and battle the Sloth Rival!</div>
+    <!-- TRACKING BUCKETS -->
+    <div class="bucket-card" id="card-work">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <span class="retro-font" style="font-size: 10px; color: var(--work);">💼 WORK & FOCUS</span>
+          <div class="time-val" id="time-work">00:00:00</div>
+        </div>
+        <div class="target-val" id="target-work">0.0 / 8.0h</div>
+      </div>
+      <div class="btn-group">
+        <button class="btn-toggle" style="background: var(--work);" onclick="toggleTimer('work')">START / PAUSE</button>
+        <button class="btn-adjust" onclick="adjustTime('work', 1800)">+30m</button>
+        <button class="btn-adjust" onclick="adjustTime('work', -900)">-15m</button>
       </div>
     </div>
 
+    <div class="bucket-card" id="card-personal">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <span class="retro-font" style="font-size: 10px; color: var(--personal);">🌿 PERSONAL & REST</span>
+          <div class="time-val" id="time-personal">00:00:00</div>
+        </div>
+        <div class="target-val" id="target-personal">0.0 / 8.0h</div>
+      </div>
+      <div class="btn-group">
+        <button class="btn-toggle" style="background: var(--personal);" onclick="toggleTimer('personal')">START / PAUSE</button>
+        <button class="btn-adjust" onclick="adjustTime('personal', 1800)">+30m</button>
+        <button class="btn-adjust" onclick="adjustTime('personal', -900)">-15m</button>
+      </div>
+    </div>
+
+    <div class="bucket-card" id="card-sleep">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <span class="retro-font" style="font-size: 10px; color: var(--sleep);">🌙 SLEEP</span>
+          <div class="time-val" id="time-sleep">00:00:00</div>
+        </div>
+        <div class="target-val" id="target-sleep">0.0 / 8.0h</div>
+      </div>
+      <div class="btn-group">
+        <button class="btn-toggle" style="background: var(--sleep);" onclick="toggleTimer('sleep')">START / PAUSE</button>
+        <button class="btn-adjust" onclick="adjustTime('sleep', 1800)">+30m</button>
+        <button class="btn-adjust" onclick="adjustTime('sleep', -900)">-15m</button>
+      </div>
+    </div>
+
+    <div class="history-card" id="history-box">Yesterday: No log records found</div>
   </div>
 
   <script>
-    // DATA MODEL
-    let state = {
-      workSec: 0,
-      personalSec: 0,
-      sleepSec: 0,
-      activeTimer: null,
-      lastTick: null,
-      hp: 100,
-      xp: 0,
-      level: 1,
-      rivalXp: 0,
-      lastDate: new Date().toLocaleDateString()
+    // SERVICE WORKER REGISTRATION
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(registration => {
+            console.log('Service worker registered:', registration.scope);
+          })
+          .catch(error => {
+            console.error('Service worker registration failed:', error);
+          });
+      });
+    }
+
+    // APPLICATION LOGIC
+    const DAY_SEC = 86400;
+
+    function getLocalDateKey(d = new Date()) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    let appState = JSON.parse(localStorage.getItem('fluid_888_v06')) || {
+      currentDate: getLocalDateKey(),
+      theme: 'light',
+      categories: {
+        work: { accumulated: 0, adjustment: 0 },
+        personal: { accumulated: 0, adjustment: 0 },
+        sleep: { accumulated: 0, adjustment: 0 }
+      },
+      activeSession: null,
+      history: {}
     };
 
-    // Load state
-    const saved = localStorage.getItem('fluid_rpg_state');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      // Midnight auto-reset check
-      if (parsed.lastDate === new Date().toLocaleDateString()) {
-        state = { ...state, ...parsed };
+    function processMidnightSplit() {
+      const now = new Date();
+      const todayKey = getLocalDateKey(now);
+
+      if (appState.currentDate !== todayKey) {
+        const oldKey = appState.currentDate;
+        const midnightMs = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).getTime();
+
+        if (appState.activeSession && appState.activeSession.startedAt < midnightMs) {
+          const elapsedOld = Math.floor((midnightMs - appState.activeSession.startedAt) / 1000);
+          const cat = appState.activeSession.category;
+          appState.categories[cat].accumulated += Math.max(0, elapsedOld);
+          appState.activeSession.startedAt = midnightMs;
+        }
+
+        const summary = {};
+        ['work', 'personal', 'sleep'].forEach(cat => summary[cat] = getCategoryTotal(cat));
+        appState.history[oldKey] = summary;
+
+        appState.currentDate = todayKey;
+        appState.categories = {
+          work: { accumulated: 0, adjustment: 0 },
+          personal: { accumulated: 0, adjustment: 0 },
+          sleep: { accumulated: 0, adjustment: 0 }
+        };
+        saveState();
       }
     }
 
-    let intervalId = null;
-
-    function saveState() {
-      state.lastDate = new Date().toLocaleDateString();
-      localStorage.setItem('fluid_rpg_state', JSON.stringify(state));
-    }
-
-    function toggleTimer(bucket, event) {
-      if (state.activeTimer === bucket) {
-        // Stop timer
-        state.activeTimer = null;
-        clearInterval(intervalId);
-        intervalId = null;
-        addLog(`Paused ${bucket.toUpperCase()} quest.`);
-      } else {
-        // Start timer
-        state.activeTimer = bucket;
-        state.lastTick = Date.now();
-        if (intervalId) clearInterval(intervalId);
-        intervalId = setInterval(tick, 1000);
-        addLog(`Started ${bucket.toUpperCase()} quest! XP generating...`);
-        
-        if (event) createFloatingText(event.clientX, event.clientY, "+XP!");
+    function getCategoryTotal(cat) {
+      const c = appState.categories[cat];
+      let total = c.accumulated + c.adjustment;
+      if (appState.activeSession && appState.activeSession.category === cat) {
+        total += Math.floor((Date.now() - appState.activeSession.startedAt) / 1000);
       }
-      updateUI();
-      saveState();
-    }
-
-    function tick() {
-      if (!state.activeTimer) return;
-
-      const now = Date.now();
-      const deltaSec = (now - state.lastTick) / 1000;
-      state.lastTick = now;
-
-      // Add time to active bucket
-      state[`${state.activeTimer}Sec`] += deltaSec;
-
-      // Earn XP (1 XP per 10 seconds of tracked activity)
-      state.xp += deltaSec * 0.1;
-      
-      // Check Level Up (100 XP per level)
-      if (state.xp >= 100) {
-        state.xp -= 100;
-        state.level += 1;
-        addLog(`🌟 LEVEL UP! You reached Level ${state.level}!`);
-      }
-
-      // Passive Rival XP growth if unallocated time is high (> 12 hours left unallocated)
-      const totalAllocatedSec = state.workSec + state.personalSec + state.sleepSec;
-      const unallocatedSec = Math.max(0, (24 * 3600) - totalAllocatedSec);
-      if (unallocatedSec > 12 * 3600) {
-        state.rivalXp += deltaSec * 0.05; // Rival grows when unallocated time is high
-      }
-
-      updateUI();
-      saveState();
+      return Math.max(0, total);
     }
 
     function formatTime(totalSec) {
-      const hrs = Math.floor(totalSec / 3600);
-      const mins = Math.floor((totalSec % 3600) / 60);
-      const secs = Math.floor(totalSec % 60);
-      return `${String(hrs).padStart(2, '0')}h ${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
+      const h = Math.floor(totalSec / 3600).toString().padStart(2, '0');
+      const m = Math.floor((totalSec % 3600) / 60).toString().padStart(2, '0');
+      const s = (totalSec % 60).toString().padStart(2, '0');
+      return `${h}:${m}:${s}`;
     }
 
     function updateUI() {
-      // Update Displays
-      document.getElementById('display-work').innerText = formatTime(state.workSec);
-      document.getElementById('display-personal').innerText = formatTime(state.personalSec);
-      document.getElementById('display-sleep').innerText = formatTime(state.sleepSec);
+      processMidnightSplit();
+      
+      document.documentElement.setAttribute('data-theme', appState.theme);
+      const metaTheme = document.getElementById('theme-color-meta');
+      if (metaTheme) {
+        metaTheme.setAttribute('content', appState.theme === 'light' ? '#f5f0e6' : '#0d0f18');
+      }
 
-      // Buttons active states
-      ['work', 'personal', 'sleep'].forEach(b => {
-        const btn = document.getElementById(`btn-${b}`);
-        if (state.activeTimer === b) {
-          btn.innerText = "PAUSE QUEST";
-          btn.classList.add('active');
+      let totalTracked = 0;
+      const totals = {};
+
+      ['work', 'personal', 'sleep'].forEach(cat => {
+        totals[cat] = getCategoryTotal(cat);
+        totalTracked += totals[cat];
+        
+        document.getElementById(`time-${cat}`).innerText = formatTime(totals[cat]);
+        document.getElementById(`target-${cat}`).innerText = `${(totals[cat] / 3600).toFixed(1)} / 8.0h`;
+        
+        const card = document.getElementById(`card-${cat}`);
+        if (appState.activeSession && appState.activeSession.category === cat) {
+          card.classList.add('active');
         } else {
-          btn.innerText = "START QUEST";
-          btn.classList.remove('active');
+          card.classList.remove('active');
         }
       });
 
-      // Balance Bar logic
-      const totalSec = 24 * 3600;
-      const workPct = Math.min(100, (state.workSec / totalSec) * 100);
-      const personalPct = Math.min(100, (state.personalSec / totalSec) * 100);
-      const sleepPct = Math.min(100, (state.sleepSec / totalSec) * 100);
-      const unallocatedPct = Math.max(0, 100 - (workPct + personalPct + sleepPct));
+      const scaleBase = Math.max(DAY_SEC, totalTracked);
+      document.getElementById('bar-work').style.width = `${(totals.work / scaleBase) * 100}%`;
+      document.getElementById('bar-personal').style.width = `${(totals.personal / scaleBase) * 100}%`;
+      document.getElementById('bar-sleep').style.width = `${(totals.sleep / scaleBase) * 100}%`;
+      
+      const statusLabel = document.getElementById('unallocated-val');
+      if (totalTracked <= DAY_SEC) {
+        const unallocated = DAY_SEC - totalTracked;
+        statusLabel.innerText = `UNALLOCATED: ${(unallocated / 3600).toFixed(1)}h`;
+        statusLabel.style.color = 'inherit';
+      } else {
+        const overflow = totalTracked - DAY_SEC;
+        statusLabel.innerText = `OVERTIME: +${(overflow / 3600).toFixed(1)}h`;
+        statusLabel.style.color = 'var(--hp-color)';
+      }
 
-      document.getElementById('seg-work').style.width = `${workPct}%`;
-      document.getElementById('seg-personal').style.width = `${personalPct}%`;
-      document.getElementById('seg-sleep').style.width = `${sleepPct}%`;
-      document.getElementById('seg-unallocated').style.width = `${unallocatedPct}%`;
+      document.getElementById('date-display').innerText = `DATE: ${appState.currentDate}`;
 
-      const unallocatedHrs = (24 * (unallocatedPct / 100)).toFixed(1);
-      document.getElementById('unallocated-text').innerText = `UNALLOCATED: ${unallocatedHrs}h`;
+      const totalXp = Math.floor(totalTracked / 60);
+      const level = Math.floor(totalXp / 100) + 1;
+      document.getElementById('lvl-val').innerText = level;
+      document.getElementById('xp-bar').style.width = `${totalXp % 100}%`;
 
-      // RPG Bar displays
-      document.getElementById('player-level').innerText = `LVL ${state.level} TIME MAGE`;
-      document.getElementById('hp-text').innerText = `${Math.round(state.hp)}/100`;
-      document.getElementById('hp-bar').style.width = `${state.hp}%`;
+      const unallocatedRatio = Math.max(0, (DAY_SEC - totalTracked) / DAY_SEC);
+      document.getElementById('rival-bar').style.width = `${unallocatedRatio * 100}%`;
 
-      document.getElementById('xp-text').innerText = `${Math.round(state.xp)}/100`;
-      document.getElementById('xp-bar').style.width = `${state.xp}%`;
-
-      document.getElementById('rival-xp-text').innerText = `${Math.round(state.rivalXp)} XP`;
-      document.getElementById('rival-bar').style.width = `${Math.min(100, (state.rivalXp / 200) * 100)}%`;
+      const keys = Object.keys(appState.history).sort();
+      if (keys.length > 0) {
+        const last = keys[keys.length - 1];
+        const h = appState.history[last];
+        document.getElementById('history-box').innerText = 
+          `Yesterday (${last}): Work ${(h.work/3600).toFixed(1)}h | Personal ${(h.personal/3600).toFixed(1)}h | Sleep ${(h.sleep/3600).toFixed(1)}h`;
+      }
     }
 
-    function addLog(text) {
-      const container = document.getElementById('log-entries');
-      const item = document.createElement('div');
-      item.className = 'log-item';
-      item.innerText = `> ${text}`;
-      container.prepend(item);
+    function toggleTimer(cat) {
+      processMidnightSplit();
+      if (appState.activeSession && appState.activeSession.category === cat) {
+        appState.categories[cat].accumulated = getCategoryTotal(cat) - appState.categories[cat].adjustment;
+        appState.activeSession = null;
+      } else {
+        if (appState.activeSession) {
+          const prev = appState.activeSession.category;
+          appState.categories[prev].accumulated = getCategoryTotal(prev) - appState.categories[prev].adjustment;
+        }
+        appState.activeSession = { category: cat, startedAt: Date.now() };
+      }
+      saveState();
+      updateUI();
     }
 
-    function createFloatingText(x, y, text) {
-      const el = document.createElement('div');
-      el.className = 'floating-text';
-      el.innerText = text;
-      el.style.left = `${x}px`;
-      el.style.top = `${y}px`;
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 1000);
+    function adjustTime(cat, deltaSeconds) {
+      processMidnightSplit();
+      appState.categories[cat].adjustment += deltaSeconds;
+      saveState();
+      updateUI();
     }
 
-    // Resume interval if tab was closed while timer active
-    if (state.activeTimer) {
-      state.lastTick = Date.now();
-      intervalId = setInterval(tick, 1000);
+    function toggleTheme() {
+      appState.theme = appState.theme === 'light' ? 'dark' : 'light';
+      saveState();
+      updateUI();
     }
 
+    function saveState() {
+      localStorage.setItem('fluid_888_v06', JSON.stringify(appState));
+    }
+
+    setInterval(updateUI, 1000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) updateUI(); });
     updateUI();
   </script>
 </body>
