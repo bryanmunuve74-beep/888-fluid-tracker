@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <script>
+    function makeIcon(size, name) {
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#22331d';
+      ctx.fillRect(0, 0, size, size);
+      ctx.fillStyle = '#eae3d2';
+      ctx.font = `bold ${Math.round(size * 0.16)}px Georgia, serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('888', size / 2, size * 0.42);
+      ctx.font = `${Math.round(size * 0.05)}px Georgia, serif`;
+      ctx.fillText('success, wealth, prosperity', size / 2, size * 0.60);
+      const a = document.createElement('a');
+      a.download = name;
+      a.href = c.toDataURL('image/png');
+      a.click();
+    }
+    window.onload = () => {
+      makeIcon(192, 'icon-192.png');
+      setTimeout(() => makeIcon(512, 'icon-512.png'), 300);
+    };
+  </script>
+</body>
+</html>
