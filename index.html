@@ -3,234 +3,534 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#121214">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>8/8/8 Fluid Tracker</title>
+  <title>8/8/8 Fluid Time Tracker - RPG Edition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- Embedded PWA Manifest via Data URI -->
-  <link rel="manifest" href='data:application/manifest+json,{"name":"8/8/8 Fluid Tracker","short_name":"888Tracker","start_url":".","display":"standalone","background_color":"#121214","theme_color":"#121214"}'>
-
   <style>
     :root {
-      --bg: #121214;
-      --card: #1e1e24;
-      --work: #3b82f6;
-      --personal: #10b981;
-      --sleep: #8b5cf6;
-      --text: #f3f4f6;
-      --subtext: #9ca3af;
-      --active-glow: rgba(255, 255, 255, 0.15);
+      --bg: #0d0f18;
+      --card-bg: #161a29;
+      --border-pixel: #2a3148;
+      --accent-work: #3b82f6;
+      --accent-personal: #ec4899;
+      --accent-sleep: #8b5cf6;
+      --hp-color: #ef4444;
+      --xp-color: #eab308;
+      --rival-color: #a855f7;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding: 16px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-    .header { text-align: center; margin-bottom: 16px; }
-    .header h1 { font-size: 1.5rem; font-weight: 700; }
-    .header p { color: var(--subtext); font-size: 0.85rem; margin-top: 4px; }
-    
-    .container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 14px; }
-    
-    .card { background: var(--card); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 2px solid transparent; transition: border-color 0.2s; }
-    .card.active { border-color: rgba(255,255,255,0.4); background: linear-gradient(180deg, var(--card) 0%, var(--active-glow) 100%); }
-    .card-header { display: flex; justify-content: space-between; align-items: center; }
-    .card-title { font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-    .card-time { font-size: 1.6rem; font-weight: 700; font-family: monospace; }
-    
-    .progress-bg { background: rgba(255,255,255,0.08); height: 10px; border-radius: 5px; overflow: hidden; }
-    .progress-fill { height: 100%; width: 0%; transition: width 0.3s ease; }
-    
-    .work .progress-fill { background: var(--work); }
-    .personal .progress-fill { background: var(--personal); }
-    .sleep .progress-fill { background: var(--sleep); }
 
-    .controls { display: flex; gap: 6px; margin-top: 4px; }
-    button { padding: 12px; border: none; border-radius: 10px; font-weight: 600; font-size: 0.85rem; cursor: pointer; color: white; transition: opacity 0.2s; }
-    button:active { opacity: 0.8; }
-    .btn-toggle { flex: 2; }
-    .btn-adjust { background: rgba(255,255,255,0.08); color: var(--subtext); flex: 1; font-size: 0.75rem; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 24px 16px;
+    }
 
-    .action-bar { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 420px; margin-top: 16px; }
-    .btn-reset { background: rgba(239, 68, 68, 0.15); color: #ef4444; width: 100%; }
-    .history-box { background: var(--card); border-radius: 12px; padding: 12px; font-size: 0.8rem; color: var(--subtext); }
+    .retro-font {
+      font-family: 'Press Start 2P', monospace;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* HEADER / BATTLE STATS */
+    .rpg-dashboard {
+      background: var(--card-bg);
+      border: 4px solid var(--border-pixel);
+      box-shadow: 0 8px 0 #000;
+      padding: 20px;
+      border-radius: 4px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .rpg-dashboard { grid-template-columns: 1fr; }
+    }
+
+    .character-card {
+      background: rgba(0,0,0,0.3);
+      padding: 12px;
+      border: 2px solid var(--border-pixel);
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .avatar-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .avatar-icon {
+      width: 48px;
+      height: 48px;
+      background: #222;
+      border: 2px solid #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .bar-container {
+      margin-top: 8px;
+    }
+
+    .bar-label {
+      font-size: 9px;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .bar-bg {
+      height: 14px;
+      background: #111;
+      border: 2px solid #333;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .hp-fill { background: var(--hp-color); }
+    .xp-fill { background: var(--xp-color); }
+    .rival-fill { background: var(--rival-color); }
+
+    /* 24-HR FLUID BALANCE BAR */
+    .balance-section {
+      background: var(--card-bg);
+      border: 4px solid var(--border-pixel);
+      box-shadow: 0 8px 0 #000;
+      padding: 20px;
+      border-radius: 4px;
+    }
+
+    .balance-title {
+      font-size: 11px;
+      margin-bottom: 12px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .stacked-bar {
+      height: 28px;
+      background: #111;
+      border: 3px solid #000;
+      display: flex;
+      overflow: hidden;
+      border-radius: 2px;
+    }
+
+    .segment {
+      height: 100%;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .segment-work { background-color: var(--accent-work); }
+    .segment-personal { background-color: var(--accent-personal); }
+    .segment-sleep { background-color: var(--accent-sleep); }
+    .segment-unallocated { background-color: #262c40; }
+
+    /* BUCKETS GRID */
+    .buckets-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 680px) {
+      .buckets-grid { grid-template-columns: 1fr; }
+    }
+
+    .bucket-card {
+      background: var(--card-bg);
+      border: 4px solid var(--border-pixel);
+      box-shadow: 0 6px 0 #000;
+      padding: 16px;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+    }
+
+    .bucket-card.work { border-top: 6px solid var(--accent-work); }
+    .bucket-card.personal { border-top: 6px solid var(--accent-personal); }
+    .bucket-card.sleep { border-top: 6px solid var(--accent-sleep); }
+
+    .bucket-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .bucket-title { font-size: 12px; font-weight: bold; }
+
+    .time-display {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .action-btn {
+      background: #262c40;
+      color: #fff;
+      border: 2px solid #333;
+      padding: 10px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 9px;
+      cursor: pointer;
+      text-transform: uppercase;
+      box-shadow: 0 4px 0 #000;
+      transition: all 0.1s ease;
+    }
+
+    .action-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #000;
+    }
+
+    .action-btn.active {
+      background: #22c55e;
+      color: #000;
+      border-color: #16a34a;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.8; }
+      100% { opacity: 1; }
+    }
+
+    /* FLOATING XP TEXT */
+    .floating-text {
+      position: absolute;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 12px;
+      color: #facc15;
+      text-shadow: 2px 2px #000;
+      pointer-events: none;
+      animation: floatUp 1s forwards ease-out;
+      z-index: 99;
+    }
+
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-30px); }
+    }
+
+    /* LOGS / QUEST FEED */
+    .quest-log {
+      background: var(--card-bg);
+      border: 4px solid var(--border-pixel);
+      box-shadow: 0 8px 0 #000;
+      padding: 16px;
+      font-size: 11px;
+    }
+
+    .quest-log-title {
+      font-size: 10px;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+    }
+
+    .log-entries {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+
+    .log-item {
+      color: #cbd5e1;
+      border-bottom: 1px dashed #2a3148;
+      padding-bottom: 4px;
+    }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <h1>8/8/8 Fluid Tracker</h1>
-    <p id="date-display">Today's Progress</p>
-  </div>
-
   <div class="container">
-    <!-- Work Card -->
-    <div class="card work" id="card-work">
-      <div class="card-header">
-        <span class="card-title">💼 Work & Focus</span>
-        <span class="card-time" id="time-work">00:00:00</span>
+    
+    <!-- RPG DASHBOARD (PLAYER VS RIVAL) -->
+    <div class="rpg-dashboard">
+      <!-- PLAYER CARD -->
+      <div class="character-card">
+        <div class="avatar-header">
+          <div class="avatar-icon">🧙‍♂️</div>
+          <div>
+            <div id="player-name" class="retro-font" style="font-size: 10px; color: #facc15;">HERO</div>
+            <div id="player-level" class="retro-font" style="font-size: 8px; margin-top: 4px; color: #94a3b8;">LVL 1 TIME MAGE</div>
+          </div>
+        </div>
+
+        <div class="bar-container">
+          <div class="bar-label retro-font"><span>HP</span><span id="hp-text">100/100</span></div>
+          <div class="bar-bg"><div id="hp-bar" class="bar-fill hp-fill" style="width: 100%;"></div></div>
+        </div>
+
+        <div class="bar-container">
+          <div class="bar-label retro-font"><span>XP</span><span id="xp-text">0/100</span></div>
+          <div class="bar-bg"><div id="xp-bar" class="bar-fill xp-fill" style="width: 0%;"></div></div>
+        </div>
       </div>
-      <div class="progress-bg"><div class="progress-fill" id="progress-work"></div></div>
-      <div class="controls">
-        <button class="btn-toggle" style="background: var(--work)" onclick="toggleTimer('work')">Start / Pause</button>
-        <button class="btn-adjust" onclick="adjustTime('work', 1800)">+30m</button>
-        <button class="btn-adjust" onclick="adjustTime('work', -900)">-15m</button>
+
+      <!-- RIVAL CARD -->
+      <div class="character-card">
+        <div class="avatar-header">
+          <div class="avatar-icon">👾</div>
+          <div>
+            <div class="retro-font" style="font-size: 10px; color: var(--rival-color);">SLOTH RIVAL</div>
+            <div id="rival-status" class="retro-font" style="font-size: 8px; margin-top: 4px; color: #94a3b8;">GAINS POWER FROM UNALLOCATED TIME</div>
+          </div>
+        </div>
+
+        <div class="bar-container" style="margin-top: 22px;">
+          <div class="bar-label retro-font"><span>RIVAL POWER</span><span id="rival-xp-text">0 XP</span></div>
+          <div class="bar-bg"><div id="rival-bar" class="bar-fill rival-fill" style="width: 0%;"></div></div>
+        </div>
       </div>
     </div>
 
-    <!-- Personal Card -->
-    <div class="card personal" id="card-personal">
-      <div class="card-header">
-        <span class="card-title">🌿 Personal & Rest</span>
-        <span class="card-time" id="time-personal">00:00:00</span>
+    <!-- 24-HR FLUID BALANCE BAR -->
+    <div class="balance-section">
+      <div class="balance-title retro-font">
+        <span>24-HOUR TIME SPECTRUM</span>
+        <span id="unallocated-text">UNALLOCATED: 24.0h</span>
       </div>
-      <div class="progress-bg"><div class="progress-fill" id="progress-personal"></div></div>
-      <div class="controls">
-        <button class="btn-toggle" style="background: var(--personal)" onclick="toggleTimer('personal')">Start / Pause</button>
-        <button class="btn-adjust" onclick="adjustTime('personal', 1800)">+30m</button>
-        <button class="btn-adjust" onclick="adjustTime('personal', -900)">-15m</button>
+      <div class="stacked-bar">
+        <div id="seg-work" class="segment segment-work" style="width: 0%;"></div>
+        <div id="seg-personal" class="segment segment-personal" style="width: 0%;"></div>
+        <div id="seg-sleep" class="segment segment-sleep" style="width: 0%;"></div>
+        <div id="seg-unallocated" class="segment segment-unallocated" style="width: 100%;"></div>
       </div>
     </div>
 
-    <!-- Sleep Card -->
-    <div class="card sleep" id="card-sleep">
-      <div class="card-header">
-        <span class="card-title">🌙 Sleep</span>
-        <span class="card-time" id="time-sleep">00:00:00</span>
+    <!-- 8/8/8 BUCKETS -->
+    <div class="buckets-grid">
+      <!-- WORK BUCKET -->
+      <div class="bucket-card work" id="card-work">
+        <div class="bucket-header">
+          <span class="bucket-title retro-font" style="color: var(--accent-work);">WORK / STUDY</span>
+          <span class="retro-font" style="font-size: 8px; color: #64748b;">GOAL: 8h</span>
+        </div>
+        <div id="display-work" class="time-display">00h 00m 00s</div>
+        <button class="action-btn" id="btn-work" onclick="toggleTimer('work', event)">START QUEST</button>
       </div>
-      <div class="progress-bg"><div class="progress-fill" id="progress-sleep"></div></div>
-      <div class="controls">
-        <button class="btn-toggle" style="background: var(--sleep)" onclick="toggleTimer('sleep')">Start / Pause</button>
-        <button class="btn-adjust" onclick="adjustTime('sleep', 1800)">+30m</button>
-        <button class="btn-adjust" onclick="adjustTime('sleep', -900)">-15m</button>
+
+      <!-- PERSONAL BUCKET -->
+      <div class="bucket-card personal" id="card-personal">
+        <div class="bucket-header">
+          <span class="bucket-title retro-font" style="color: var(--accent-personal);">PERSONAL / RECHARGE</span>
+          <span class="retro-font" style="font-size: 8px; color: #64748b;">GOAL: 8h</span>
+        </div>
+        <div id="display-personal" class="time-display">00h 00m 00s</div>
+        <button class="action-btn" id="btn-personal" onclick="toggleTimer('personal', event)">START QUEST</button>
+      </div>
+
+      <!-- SLEEP BUCKET -->
+      <div class="bucket-card sleep" id="card-sleep">
+        <div class="bucket-header">
+          <span class="bucket-title retro-font" style="color: var(--accent-sleep);">SLEEP / REST</span>
+          <span class="retro-font" style="font-size: 8px; color: #64748b;">GOAL: 8h</span>
+        </div>
+        <div id="display-sleep" class="time-display">00h 00m 00s</div>
+        <button class="action-btn" id="btn-sleep" onclick="toggleTimer('sleep', event)">START QUEST</button>
       </div>
     </div>
-  </div>
 
-  <div class="action-bar">
-    <div class="history-box" id="history-box">Yesterday's Totals: No history yet</div>
-    <button class="btn-reset" onclick="resetDay()">Manual Reset Today</button>
+    <!-- QUEST LOG -->
+    <div class="quest-log">
+      <div class="quest-log-title retro-font">QUEST CHRONICLES</div>
+      <div id="log-entries" class="log-entries">
+        <div class="log-item">> System initialized. Ready to balance time and battle the Sloth Rival!</div>
+      </div>
+    </div>
+
   </div>
 
   <script>
-    const TARGET_SECONDS = 8 * 3600;
-    
-    let appData = JSON.parse(localStorage.getItem('fluid_888_app_state')) || {
-      currentDate: new Date().toISOString().split('T')[0],
-      accumulated: { work: 0, personal: 0, sleep: 0 },
-      activeCategory: null,
-      startTime: null,
-      history: {}
+    // DATA MODEL
+    let state = {
+      workSec: 0,
+      personalSec: 0,
+      sleepSec: 0,
+      activeTimer: null,
+      lastTick: null,
+      hp: 100,
+      xp: 0,
+      level: 1,
+      rivalXp: 0,
+      lastDate: new Date().toLocaleDateString()
     };
 
-    function checkMidnightReset() {
-      const today = new Date().toISOString().split('T')[0];
-      if (appData.currentDate !== today) {
-        // Archive yesterday
-        const finalTotals = getCalculatedTotals();
-        appData.history[appData.currentDate] = finalTotals;
-        
-        // Reset for new day
-        appData.currentDate = today;
-        appData.accumulated = { work: 0, personal: 0, sleep: 0 };
-        appData.activeCategory = null;
-        appData.startTime = null;
-        saveState();
+    // Load state
+    const saved = localStorage.getItem('fluid_rpg_state');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Midnight auto-reset check
+      if (parsed.lastDate === new Date().toLocaleDateString()) {
+        state = { ...state, ...parsed };
       }
     }
 
-    function getCalculatedTotals() {
-      const totals = { ...appData.accumulated };
-      if (appData.activeCategory && appData.startTime) {
-        const elapsed = Math.floor((Date.now() - appData.startTime) / 1000);
-        totals[appData.activeCategory] += Math.max(0, elapsed);
+    let intervalId = null;
+
+    function saveState() {
+      state.lastDate = new Date().toLocaleDateString();
+      localStorage.setItem('fluid_rpg_state', JSON.stringify(state));
+    }
+
+    function toggleTimer(bucket, event) {
+      if (state.activeTimer === bucket) {
+        // Stop timer
+        state.activeTimer = null;
+        clearInterval(intervalId);
+        intervalId = null;
+        addLog(`Paused ${bucket.toUpperCase()} quest.`);
+      } else {
+        // Start timer
+        state.activeTimer = bucket;
+        state.lastTick = Date.now();
+        if (intervalId) clearInterval(intervalId);
+        intervalId = setInterval(tick, 1000);
+        addLog(`Started ${bucket.toUpperCase()} quest! XP generating...`);
+        
+        if (event) createFloatingText(event.clientX, event.clientY, "+XP!");
       }
-      return totals;
+      updateUI();
+      saveState();
+    }
+
+    function tick() {
+      if (!state.activeTimer) return;
+
+      const now = Date.now();
+      const deltaSec = (now - state.lastTick) / 1000;
+      state.lastTick = now;
+
+      // Add time to active bucket
+      state[`${state.activeTimer}Sec`] += deltaSec;
+
+      // Earn XP (1 XP per 10 seconds of tracked activity)
+      state.xp += deltaSec * 0.1;
+      
+      // Check Level Up (100 XP per level)
+      if (state.xp >= 100) {
+        state.xp -= 100;
+        state.level += 1;
+        addLog(`🌟 LEVEL UP! You reached Level ${state.level}!`);
+      }
+
+      // Passive Rival XP growth if unallocated time is high (> 12 hours left unallocated)
+      const totalAllocatedSec = state.workSec + state.personalSec + state.sleepSec;
+      const unallocatedSec = Math.max(0, (24 * 3600) - totalAllocatedSec);
+      if (unallocatedSec > 12 * 3600) {
+        state.rivalXp += deltaSec * 0.05; // Rival grows when unallocated time is high
+      }
+
+      updateUI();
+      saveState();
     }
 
     function formatTime(totalSec) {
-      const sec = Math.max(0, totalSec);
-      const h = Math.floor(sec / 3600).toString().padStart(2, '0');
-      const m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
-      const s = (sec % 60).toString().padStart(2, '0');
-      return `${h}:${m}:${s}`;
+      const hrs = Math.floor(totalSec / 3600);
+      const mins = Math.floor((totalSec % 3600) / 60);
+      const secs = Math.floor(totalSec % 60);
+      return `${String(hrs).padStart(2, '0')}h ${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
     }
 
     function updateUI() {
-      checkMidnightReset();
-      const currentTotals = getCalculatedTotals();
+      // Update Displays
+      document.getElementById('display-work').innerText = formatTime(state.workSec);
+      document.getElementById('display-personal').innerText = formatTime(state.personalSec);
+      document.getElementById('display-sleep').innerText = formatTime(state.sleepSec);
 
-      ['work', 'personal', 'sleep'].forEach(cat => {
-        document.getElementById(`time-${cat}`).innerText = formatTime(currentTotals[cat]);
-        const pct = Math.min(100, (currentTotals[cat] / TARGET_SECONDS) * 100);
-        document.getElementById(`progress-${cat}`).style.width = `${pct}%`;
-        
-        const cardElem = document.getElementById(`card-${cat}`);
-        if (appData.activeCategory === cat) {
-          cardElem.classList.add('active');
+      // Buttons active states
+      ['work', 'personal', 'sleep'].forEach(b => {
+        const btn = document.getElementById(`btn-${b}`);
+        if (state.activeTimer === b) {
+          btn.innerText = "PAUSE QUEST";
+          btn.classList.add('active');
         } else {
-          cardElem.classList.remove('active');
+          btn.innerText = "START QUEST";
+          btn.classList.remove('active');
         }
       });
 
-      // Update Date & History UI
-      document.getElementById('date-display').innerText = `Date: ${appData.currentDate}`;
-      const dates = Object.keys(appData.history).sort();
-      if (dates.length > 0) {
-        const lastDate = dates[dates.length - 1];
-        const prev = appData.history[lastDate];
-        document.getElementById('history-box').innerText = 
-          `Yesterday (${lastDate}): Work ${(prev.work/3600).toFixed(1)}h | Personal ${(prev.personal/3600).toFixed(1)}h | Sleep ${(prev.sleep/3600).toFixed(1)}h`;
-      }
+      // Balance Bar logic
+      const totalSec = 24 * 3600;
+      const workPct = Math.min(100, (state.workSec / totalSec) * 100);
+      const personalPct = Math.min(100, (state.personalSec / totalSec) * 100);
+      const sleepPct = Math.min(100, (state.sleepSec / totalSec) * 100);
+      const unallocatedPct = Math.max(0, 100 - (workPct + personalPct + sleepPct));
+
+      document.getElementById('seg-work').style.width = `${workPct}%`;
+      document.getElementById('seg-personal').style.width = `${personalPct}%`;
+      document.getElementById('seg-sleep').style.width = `${sleepPct}%`;
+      document.getElementById('seg-unallocated').style.width = `${unallocatedPct}%`;
+
+      const unallocatedHrs = (24 * (unallocatedPct / 100)).toFixed(1);
+      document.getElementById('unallocated-text').innerText = `UNALLOCATED: ${unallocatedHrs}h`;
+
+      // RPG Bar displays
+      document.getElementById('player-level').innerText = `LVL ${state.level} TIME MAGE`;
+      document.getElementById('hp-text').innerText = `${Math.round(state.hp)}/100`;
+      document.getElementById('hp-bar').style.width = `${state.hp}%`;
+
+      document.getElementById('xp-text').innerText = `${Math.round(state.xp)}/100`;
+      document.getElementById('xp-bar').style.width = `${state.xp}%`;
+
+      document.getElementById('rival-xp-text').innerText = `${Math.round(state.rivalXp)} XP`;
+      document.getElementById('rival-bar').style.width = `${Math.min(100, (state.rivalXp / 200) * 100)}%`;
     }
 
-    function toggleTimer(category) {
-      checkMidnightReset();
-      if (appData.activeCategory === category) {
-        // Pause current timer
-        appData.accumulated[category] = getCalculatedTotals()[category];
-        appData.activeCategory = null;
-        appData.startTime = null;
-      } else {
-        // Switch timer (Auto-pause previously running category)
-        if (appData.activeCategory) {
-          appData.accumulated[appData.activeCategory] = getCalculatedTotals()[appData.activeCategory];
-        }
-        appData.activeCategory = category;
-        appData.startTime = Date.now();
-      }
-      saveState();
-      updateUI();
+    function addLog(text) {
+      const container = document.getElementById('log-entries');
+      const item = document.createElement('div');
+      item.className = 'log-item';
+      item.innerText = `> ${text}`;
+      container.prepend(item);
     }
 
-    function adjustTime(category, deltaSeconds) {
-      checkMidnightReset();
-      if (appData.activeCategory === category) {
-        appData.startTime += (deltaSeconds * 1000);
-      } else {
-        appData.accumulated[category] = Math.max(0, appData.accumulated[category] + deltaSeconds);
-      }
-      saveState();
-      updateUI();
+    function createFloatingText(x, y, text) {
+      const el = document.createElement('div');
+      el.className = 'floating-text';
+      el.innerText = text;
+      el.style.left = `${x}px`;
+      el.style.top = `${y}px`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1000);
     }
 
-    function resetDay() {
-      if (confirm("Reset today's recorded time to zero?")) {
-        appData.accumulated = { work: 0, personal: 0, sleep: 0 };
-        appData.activeCategory = null;
-        appData.startTime = null;
-        saveState();
-        updateUI();
-      }
+    // Resume interval if tab was closed while timer active
+    if (state.activeTimer) {
+      state.lastTick = Date.now();
+      intervalId = setInterval(tick, 1000);
     }
-
-    function saveState() {
-      localStorage.setItem('fluid_888_app_state', JSON.stringify(appData));
-    }
-
-    // Refresh display every second & re-sync when coming back from background
-    setInterval(updateUI, 1000);
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) updateUI();
-    });
 
     updateUI();
   </script>
