@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#121214">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>8/8/8 Fluid Tracker</title>
+  
+  <!-- Embedded PWA Manifest via Data URI -->
+  <link rel="manifest" href='data:application/manifest+json,{"name":"8/8/8 Fluid Tracker","short_name":"888Tracker","start_url":".","display":"standalone","background_color":"#121214","theme_color":"#121214"}'>
+
+  <style>
+    :root {
+      --bg: #121214;
+      --card: #1e1e24;
+      --work: #3b82f6;
+      --personal: #10b981;
+      --sleep: #8b5cf6;
+      --text: #f3f4f6;
+      --subtext: #9ca3af;
+      --active-glow: rgba(255, 255, 255, 0.15);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 16px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+    .header { text-align: center; margin-bottom: 16px; }
+    .header h1 { font-size: 1.5rem; font-weight: 700; }
+    .header p { color: var(--subtext); font-size: 0.85rem; margin-top: 4px; }
+    
+    .container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 14px; }
+    
+    .card { background: var(--card); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 2px solid transparent; transition: border-color 0.2s; }
+    .card.active { border-color: rgba(255,255,255,0.4); background: linear-gradient(180deg, var(--card) 0%, var(--active-glow) 100%); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; }
+    .card-title { font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .card-time { font-size: 1.6rem; font-weight: 700; font-family: monospace; }
+    
+    .progress-bg { background: rgba(255,255,255,0.08); height: 10px; border-radius: 5px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; transition: width 0.3s ease; }
+    
+    .work .progress-fill { background: var(--work); }
+    .personal .progress-fill { background: var(--personal); }
+    .sleep .progress-fill { background: var(--sleep); }
+
+    .controls { display: flex; gap: 6px; margin-top: 4px; }
+    button { padding: 12px; border: none; border-radius: 10px; font-weight: 600; font-size: 0.85rem; cursor: pointer; color: white; transition: opacity 0.2s; }
+    button:active { opacity: 0.8; }
+    .btn-toggle { flex: 2; }
+    .btn-adjust { background: rgba(255,255,255,0.08); color: var(--subtext); flex: 1; font-size: 0.75rem; }
+
+    .action-bar { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 420px; margin-top: 16px; }
+    .btn-reset { background: rgba(239, 68, 68, 0.15); color: #ef4444; width: 100%; }
+    .history-box { background: var(--card); border-radius: 12px; padding: 12px; font-size: 0.8rem; color: var(--subtext); }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>8/8/8 Fluid Tracker</h1>
+    <p id="date-display">Today's Progress</p>
+  </div>
+
+  <div class="container">
+    <!-- Work Card -->
+    <div class="card work" id="card-work">
+      <div class="card-header">
+        <span class="card-title">💼 Work & Focus</span>
+        <span class="card-time" id="time-work">00:00:00</span>
+      </div>
+      <div class="progress-bg"><div class="progress-fill" id="progress-work"></div></div>
+      <div class="controls">
+        <button class="btn-toggle" style="background: var(--work)" onclick="toggleTimer('work')">Start / Pause</button>
+        <button class="btn-adjust" onclick="adjustTime('work', 1800)">+30m</button>
+        <button class="btn-adjust" onclick="adjustTime('work', -900)">-15m</button>
+      </div>
+    </div>
+
+    <!-- Personal Card -->
+    <div class="card personal" id="card-personal">
+      <div class="card-header">
+        <span class="card-title">🌿 Personal & Rest</span>
+        <span class="card-time" id="time-personal">00:00:00</span>
+      </div>
+      <div class="progress-bg"><div class="progress-fill" id="progress-personal"></div></div>
+      <div class="controls">
+        <button class="btn-toggle" style="background: var(--personal)" onclick="toggleTimer('personal')">Start / Pause</button>
+        <button class="btn-adjust" onclick="adjustTime('personal', 1800)">+30m</button>
+        <button class="btn-adjust" onclick="adjustTime('personal', -900)">-15m</button>
+      </div>
+    </div>
+
+    <!-- Sleep Card -->
+    <div class="card sleep" id="card-sleep">
+      <div class="card-header">
+        <span class="card-title">🌙 Sleep</span>
+        <span class="card-time" id="time-sleep">00:00:00</span>
+      </div>
+      <div class="progress-bg"><div class="progress-fill" id="progress-sleep"></div></div>
+      <div class="controls">
+        <button class="btn-toggle" style="background: var(--sleep)" onclick="toggleTimer('sleep')">Start / Pause</button>
+        <button class="btn-adjust" onclick="adjustTime('sleep', 1800)">+30m</button>
+        <button class="btn-adjust" onclick="adjustTime('sleep', -900)">-15m</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-bar">
+    <div class="history-box" id="history-box">Yesterday's Totals: No history yet</div>
+    <button class="btn-reset" onclick="resetDay()">Manual Reset Today</button>
+  </div>
+
+  <script>
+    const TARGET_SECONDS = 8 * 3600;
+    
+    let appData = JSON.parse(localStorage.getItem('fluid_888_app_state')) || {
+      currentDate: new Date().toISOString().split('T')[0],
+      accumulated: { work: 0, personal: 0, sleep: 0 },
+      activeCategory: null,
+      startTime: null,
+      history: {}
+    };
+
+    function checkMidnightReset() {
+      const today = new Date().toISOString().split('T')[0];
+      if (appData.currentDate !== today) {
+        // Archive yesterday
+        const finalTotals = getCalculatedTotals();
+        appData.history[appData.currentDate] = finalTotals;
+        
+        // Reset for new day
+        appData.currentDate = today;
+        appData.accumulated = { work: 0, personal: 0, sleep: 0 };
+        appData.activeCategory = null;
+        appData.startTime = null;
+        saveState();
+      }
+    }
+
+    function getCalculatedTotals() {
+      const totals = { ...appData.accumulated };
+      if (appData.activeCategory && appData.startTime) {
+        const elapsed = Math.floor((Date.now() - appData.startTime) / 1000);
+        totals[appData.activeCategory] += Math.max(0, elapsed);
+      }
+      return totals;
+    }
+
+    function formatTime(totalSec) {
+      const sec = Math.max(0, totalSec);
+      const h = Math.floor(sec / 3600).toString().padStart(2, '0');
+      const m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
+      const s = (sec % 60).toString().padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    }
+
+    function updateUI() {
+      checkMidnightReset();
+      const currentTotals = getCalculatedTotals();
+
+      ['work', 'personal', 'sleep'].forEach(cat => {
+        document.getElementById(`time-${cat}`).innerText = formatTime(currentTotals[cat]);
+        const pct = Math.min(100, (currentTotals[cat] / TARGET_SECONDS) * 100);
+        document.getElementById(`progress-${cat}`).style.width = `${pct}%`;
+        
+        const cardElem = document.getElementById(`card-${cat}`);
+        if (appData.activeCategory === cat) {
+          cardElem.classList.add('active');
+        } else {
+          cardElem.classList.remove('active');
+        }
+      });
+
+      // Update Date & History UI
+      document.getElementById('date-display').innerText = `Date: ${appData.currentDate}`;
+      const dates = Object.keys(appData.history).sort();
+      if (dates.length > 0) {
+        const lastDate = dates[dates.length - 1];
+        const prev = appData.history[lastDate];
+        document.getElementById('history-box').innerText = 
+          `Yesterday (${lastDate}): Work ${(prev.work/3600).toFixed(1)}h | Personal ${(prev.personal/3600).toFixed(1)}h | Sleep ${(prev.sleep/3600).toFixed(1)}h`;
+      }
+    }
+
+    function toggleTimer(category) {
+      checkMidnightReset();
+      if (appData.activeCategory === category) {
+        // Pause current timer
+        appData.accumulated[category] = getCalculatedTotals()[category];
+        appData.activeCategory = null;
+        appData.startTime = null;
+      } else {
+        // Switch timer (Auto-pause previously running category)
+        if (appData.activeCategory) {
+          appData.accumulated[appData.activeCategory] = getCalculatedTotals()[appData.activeCategory];
+        }
+        appData.activeCategory = category;
+        appData.startTime = Date.now();
+      }
+      saveState();
+      updateUI();
+    }
+
+    function adjustTime(category, deltaSeconds) {
+      checkMidnightReset();
+      if (appData.activeCategory === category) {
+        appData.startTime += (deltaSeconds * 1000);
+      } else {
+        appData.accumulated[category] = Math.max(0, appData.accumulated[category] + deltaSeconds);
+      }
+      saveState();
+      updateUI();
+    }
+
+    function resetDay() {
+      if (confirm("Reset today's recorded time to zero?")) {
+        appData.accumulated = { work: 0, personal: 0, sleep: 0 };
+        appData.activeCategory = null;
+        appData.startTime = null;
+        saveState();
+        updateUI();
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem('fluid_888_app_state', JSON.stringify(appData));
+    }
+
+    // Refresh display every second & re-sync when coming back from background
+    setInterval(updateUI, 1000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) updateUI();
+    });
+
+    updateUI();
+  </script>
+</body>
+</html>
